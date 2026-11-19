@@ -435,6 +435,8 @@ const ROT = (() => {
       g.beginPath(); g.moveTo(66, 128); g.quadraticCurveTo(128, 70, 190, 128); g.quadraticCurveTo(128, 186, 66, 128); g.fill();
       g.fillStyle = '#fff'; g.beginPath(); g.arc(128, 128, 22, 0, 7); g.fill();
       g.fillStyle = '#111'; g.beginPath(); g.arc(128, 128, 12, 0, 7); g.fill();
+    } else if (kind === 'play') {
+      g.beginPath(); g.moveTo(106, 84); g.lineTo(178, 128); g.lineTo(106, 172); g.closePath(); g.fill();
     } else if (kind === 'info') {
       g.font = 'bold 120px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('i', 128, 134);
     }
@@ -469,6 +471,23 @@ const ROT = (() => {
     const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
     gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.15, 'rgba(255,240,210,.8)'); gr.addColorStop(1, 'rgba(255,230,190,0)');
     g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    return tex(c);
+  }
+
+  // Pantalla del quiosco de juego
+  function kioskScreenTexture(n, game) {
+    const c = canvas(640, 400), g = c.getContext('2d');
+    const gr = g.createLinearGradient(0, 0, 0, 400); gr.addColorStop(0, '#16324a'); gr.addColorStop(1, '#0a1622');
+    g.fillStyle = gr; g.fillRect(0, 0, 640, 400);
+    g.strokeStyle = '#e8c45a'; g.lineWidth = 6; g.strokeRect(14, 14, 612, 372);
+    g.fillStyle = '#e8c45a'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = 'bold 40px Verdana, Tahoma, sans-serif'; g.fillText('GAME ' + (n + 1), 320, 78);
+    g.fillStyle = '#ffffff'; let size = 62; g.font = `bold ${size}px "Libre Baskerville", Georgia, serif`;
+    while (g.measureText(game.title).width > 570 && size > 30) { size -= 2; g.font = `bold ${size}px "Libre Baskerville", Georgia, serif`; }
+    g.fillText(game.title, 320, 170);
+    g.font = '36px Verdana, Tahoma, sans-serif'; g.fillStyle = '#cfe3f2'; g.fillText(game.years, 320, 245);
+    g.fillStyle = '#e8c45a'; roundRect(g, 200, 290, 240, 66, 14); g.fill();
+    g.fillStyle = '#111'; g.font = 'bold 36px Verdana, Tahoma, sans-serif'; g.fillText('▶ PLAY', 320, 324);
     return tex(c);
   }
 
@@ -677,6 +696,29 @@ const ROT = (() => {
       colliders.push({ x: p.x, z: p.z, r: 1.25 });
     });
 
+    // Quioscos de juego: uno después de cada 2 salas (en las esquinas 2, 4, 6 y 8)
+    const games = [];
+    if (typeof GAMES !== 'undefined') {
+      const PLAY_TEX = iconTexture('play', 'PLAY');
+      const kMat = lam({ color: 0x2b2b2d }), bezel = lam({ color: 0x151517 });
+      GAMES.LIST.forEach((game, n) => {
+        const phi = angleOf(game.after) - SEG / 2, p = toWorld(phi, 0, 0, -9.6);
+        const k = new THREE.Group(); k.position.copy(p); k.rotation.y = phi; scene.add(k);
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.62, 1.0, 0.42), kMat); body.position.y = 0.5; k.add(body);
+        const foot = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.06, 0.6), bezel); foot.position.y = 0.03; k.add(foot);
+        const head = new THREE.Group(); head.position.set(0, 1.18, 0.04); head.rotation.x = -0.45; k.add(head);
+        const frame = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.6, 0.06), bezel); head.add(frame);
+        const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.5), new THREE.MeshBasicMaterial({ map: kioskScreenTexture(n, game) }));
+        scr.position.z = 0.031; head.add(scr);
+        const play = new THREE.Sprite(new THREE.SpriteMaterial({ map: PLAY_TEX, transparent: true }));
+        play.scale.set(0.34, 0.44, 1); play.position.set(0, 1.86, 0); k.add(play);
+        [body, frame, scr, play].forEach(o => { o.userData = { game: n, icon: o === play }; targets.push(o); });
+        hotspots.push(play);
+        colliders.push({ x: p.x, z: p.z, r: 0.75 });
+        games.push({ pos: p, phi });
+      });
+    }
+
     // Pedestal central de piedra con una vitrina de vidrio (adentro, un disquete de 3.5 pulgadas)
     const stone = lam({ color: 0xa69f93 });
     const plinth = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.45, 0.95, 48), [
@@ -702,7 +744,7 @@ const ROT = (() => {
     anim.push((tm) => { const k = 1 + Math.sin(tm * 2.4) * 0.06; hotspots.forEach(d => { const b = d.userData.base || (d.userData.base = d.scale.clone()); d.scale.set(b.x * k, b.y * k, 1); }); floorSpots.forEach(d => { d.scale.set(0.8 * k, 1.03 * k, 1); d.position.y = 0.6 + Math.sin(tm * 2) * 0.03; }); });
 
     return {
-      targets, viewpoints, closeViews, modelViews, colliders, anim,
+      targets, viewpoints, closeViews, modelViews, colliders, anim, games,
       bounds: { rMax: R - 1.35, rMin: 0 },
       start: { pos: new THREE.Vector3(0, EYE, R - 3.2), yaw: 0, pitch: 0.02 },
       angleOf, SEG, toWorld, H

@@ -223,6 +223,7 @@
     lastZoom = !!(hit && hit.object.userData.zoom);
     lastView = !!(hit && hit.object.userData.view);
     lastModel = !!(hit && hit.object.userData.model);
+    if (hit && hit.object.userData.game !== undefined) return hit.distance < 9 || hit.object.userData.icon ? 100 + hit.object.userData.game : -1;
     return hit && (hit.distance < 9 || hit.object.userData.icon) ? hit.object.userData.index : -1;
   }
   let lastZoom = false, lastView = false, lastModel = false;
@@ -252,7 +253,8 @@
     drag = null; vp.classList.remove('drag');
     if (tap) {
       const i = pick(e.clientX, e.clientY);
-      if (i >= 0) { if (lastView) goTo(i, 'close'); else if (lastModel) goTo(i, 'model'); else if (lastZoom) openViewer(i); else openExhibit(i); }
+      if (i >= 100) GAMES.open(i - 100, openOverlay, closeOverlay);
+      else if (i >= 0) { if (lastView) goTo(i, 'close'); else if (lastModel) goTo(i, 'model'); else if (lastZoom) openViewer(i); else openExhibit(i); }
     }
   }
   vp.addEventListener('pointerup', endDrag);
@@ -340,9 +342,9 @@
       Each room shows <b>one photo</b> of a real computer from that year.</p>
       <h3>On a computer</h3>
       <ul><li>Drag with the mouse to look around.</li><li>Walk with <b>W A S D</b> or the arrow keys (hold Shift to walk faster).</li>
-      <li>Click a photo, its text or its gold plaque to learn more.</li><li>Round icons show where you can look closer: <b>ZOOM</b> opens the photo big, <b>VIEW</b> walks you up to the photo, <b>LOOK</b> walks you up to the scale model, and <b>INFO</b> opens the full text.</li><li>Click the gold <b>VIEW</b> eye above a room's rug to walk up close to the photo and its text.</li><li>Press <b>1</b> to <b>9</b> to jump to a year.</li></ul>
+      <li>Click a photo, its text or its gold plaque to learn more.</li><li>Round icons show where you can look closer: <b>ZOOM</b> opens the photo big, <b>VIEW</b> walks you up to the photo, <b>LOOK</b> walks you up to the scale model, and <b>INFO</b> opens the full text.</li><li>Click the gold <b>VIEW</b> eye above a room's rug to walk up close to the photo and its text.</li><li>Press <b>1</b> to <b>9</b> to jump to a year.</li><li>After every two rooms there is a <b>game kiosk</b>. Click its <b>PLAY</b> icon or screen to play a quick game about the two rooms you just saw.</li></ul>
       <h3>On a phone or tablet</h3>
-      <ul><li>Use the round joystick to walk.</li><li>Drag the screen to look around.</li><li>Tap a photo to learn more, or its glowing dot to zoom in.</li><li>Tap the gold <b>VIEW</b> eye above a rug to walk up close to the photo and its text.</li></ul>
+      <ul><li>Use the round joystick to walk.</li><li>Drag the screen to look around.</li><li>Tap a photo to learn more, or its glowing dot to zoom in.</li><li>Tap the gold <b>VIEW</b> eye above a rug to walk up close to the photo and its text.</li><li>Tap <b>PLAY</b> on a game kiosk for a quick game.</li></ul>
       <h3>The timeline</h3>
       <p>The timeline at the top has one dot for every year. Tap a dot to walk to that year. ◀ and ▶ at the bottom go to the previous or next year, and the short text at the bottom explains what you are looking at.</p>
     </div>`, [['OK', closeOverlay, true]]);
