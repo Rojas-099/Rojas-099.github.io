@@ -192,9 +192,12 @@
         setCurrent(nearest());
       }
     }
-    museum.anim.forEach(fn => fn(tm));
-    applyCam();
-    renderer.render(scene, camera);
+    // con un juego abierto la escena no se mueve: no se redibuja y el juego va más fluido
+    if (ov.hidden || !document.getElementById('g-box')) {
+      museum.anim.forEach(fn => fn(tm));
+      applyCam();
+      renderer.render(scene, camera);
+    }
     requestAnimationFrame(loop);
   }
 
