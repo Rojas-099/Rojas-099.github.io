@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!--
+  THE SILICON ROTUNDA · Museo 2 de computadoras 1995–2003
+  -------------------------------------------------------
+  Museo nuevo y separado del primero. Es una sala redonda (rotonda)
+  con 9 nichos, uno por año, y UNA sola foto por año.
+  - css/style.css        -> interfaz estilo Mac OS 9 "Platinum" (época 1997–2001)
+  - js/lib/three.min.js  -> librería Three.js para el 3D (licencia MIT)
+  - js/data.js           -> contenido: años, textos, créditos y colores de cada nicho
+  - js/photos.js         -> las 9 fotos achicadas (para que funcione sin servidor)
+  - js/models.js         -> maquetas 3D a escala de las 9 computadoras
+  - js/museum.js         -> construye la rotonda 3D (paredes, cuadros, cúpula, piso)
+  - js/gfx.js            -> gráficos: luz realista, sombras, reflejos en el piso
+  - js/app.js            -> caminar, mirar, menú de años, ventanas y visor de fotos
+  - images/              -> las fotos originales (Wikimedia Commons)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>The Silicon Rotunda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Libre+Baskerville:wght@400;700&family=Permanent+Marker&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="viewport"></div>
+  <div id="vignette" aria-hidden="true"></div>
+  <div id="aim" aria-hidden="true"></div>
+
+  <!-- Barra superior -->
+  <header id="topbar" class="win">
+    <div class="brand"><b>The Silicon Rotunda</b><span>Computer Museum · 1995–2003 · one photo per year</span></div>
+    <button class="btn" id="btn-help">Help</button>
+    <button class="btn" id="btn-credits">Credits</button>
+  </header>
+
+  <!-- Línea de tiempo arriba: un punto por año -->
+  <nav id="timeline" class="win" aria-label="Timeline">
+    <div id="tl-track"><div id="tl-line"></div><div id="tl-fill"></div><div id="tl-stops"></div></div>
+  </nav>
+
+  <!-- Ayuda amarilla -->
+  <div id="balloon" class="balloon" hidden></div>
+
+  <!-- Panel de abajo: año actual y mini texto explicativo -->
+  <section id="dock" class="win" aria-label="Exhibits">
+    <div class="win-title"><span class="title-text">About this room</span></div>
+    <div class="win-body">
+      <div class="dock-row">
+        <button class="btn" id="btn-prev" aria-label="Previous year">◀</button>
+        <div id="now"><i class="chip"></i><b>Welcome</b><span>Choose a year or walk around</span></div>
+        <button class="btn" id="learn">Learn more</button>
+        <button class="btn" id="btn-next" aria-label="Next year">▶</button>
+      </div>
+      <p id="blurb"></p>
+    </div>
+  </section>
+
+  <!-- Joystick para caminar en el celular -->
+  <div id="joy" hidden aria-label="Walk"><div class="knob"></div></div>
+
+  <!-- Ventana de cada computadora / ayuda / créditos -->
+  <div id="overlay" class="overlay" hidden>
+    <div class="win" role="dialog" aria-modal="true" aria-labelledby="ov-title">
+      <div class="win-title"><button class="closebox" id="ov-close" aria-label="Close"></button><span class="title-text" id="ov-title">Exhibit</span></div>
+      <div class="win-body" id="ov-body"></div>
+      <div class="win-foot" id="ov-foot"></div>
+    </div>
+  </div>
+
+  <!-- Visor de foto grande con zoom -->
+  <div id="viewer" hidden>
+    <div class="win-title"><button class="closebox" id="vw-close" aria-label="Close"></button><span class="title-text" id="vw-title">Photo</span></div>
+    <div class="tools">
+      <button class="btn" id="vw-out" aria-label="Zoom out">−  Zoom out</button>
+      <button class="btn" id="vw-reset">Fit</button>
+      <button class="btn" id="vw-in" aria-label="Zoom in">+  Zoom in</button>
+      <button class="btn" id="vw-done">Done</button>
+    </div>
+    <div id="stage"><img id="vw-img" alt="" draggable="false"></div>
+  </div>
+
+  <!-- Carga y bienvenida -->
+  <div id="loading" class="overlay">
+    <div class="win">
+      <div class="win-title"><span class="title-text">Welcome</span></div>
+      <div class="win-body">
+        <div class="logo">The Silicon Rotunda</div>
+        <div class="sub">A computer museum · 1995–2003<br>Nine years, nine machines, one photo for every year.</div>
+        <div class="progress"><div id="bar"></div></div>
+        <div id="load-msg" style="text-align:center;font-size:12px;margin-top:6px">Building the rotunda…</div>
+        <div id="enter-row" hidden><button class="btn default" id="enter">Enter the museum</button></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/lib/three.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/photos.js"></script>
+  <script src="js/models.js"></script>
+  <script src="js/museum.js"></script>
+  <script src="js/gfx.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
